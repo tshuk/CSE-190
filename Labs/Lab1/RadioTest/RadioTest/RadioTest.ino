@@ -14,7 +14,7 @@
 
 #include "RadioFunctions.h"
 
-uint8_t val = 0;
+uint8_t numPackets = 0;
 
 void setup()
 {
@@ -43,27 +43,29 @@ void setup()
 }*/
 
 /* Transmit loop
- * Send data as quickly as possible. Data is an 8-bit value val which is
- * initialized to 0 and increments after each message. The receiver should
- * track the values received and calculate the number of dropped packets
- * using the data values (i.e. receiving 10 then 12 implies packet 11 was lost).
+ * Send 100 data packets as quickly as possible.
+ * Data is the current time as given by millis().
  */
-/*void loop()
+void loop()
 {
-  rfWrite(val);
-  val++;
-}*/
+  if (numPackets < 100)
+  {
+    rfWrite(millis());
+    numPackets++;
+  }
+}
 
 /* Receive loop
  *
  */
-char tmpBuf[128];
+/*char tmpBuf[128];
 
 void loop()
 {
   if (rfAvailable())  // If data receievd on radio...
   {
-    sprintf(tmpBuf, "Expected %i, received %i\n", val++, rfRead());
+    numPackets++;
+    sprintf(tmpBuf, "%i: Received  %i at time %i\n", numPackets, rfRead(), millis());
     Serial.print(tmpBuf);
   }
-}
+}*/
