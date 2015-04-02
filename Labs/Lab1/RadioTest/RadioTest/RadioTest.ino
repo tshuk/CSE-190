@@ -23,8 +23,17 @@ void setup()
   rfBegin(13);  // Initialize ATmega128RFA1 radio on channel 11 (can be 11-26)
   
   // Send a message to other RF boards on this channel
-  rfPrint("ATmega128RFA1 Dev Board Online!\r\n");
-  Serial.print("setup complete\n");
+  //rfPrint("ATmega128RFA1 Dev Board Online!\r\n");
+  Serial.print("setup complete\r\n");
+  
+  // single frame transmission test
+  uint8_t testFrame[126];
+  for(int i = 0; i < 126; i++)
+  {
+    testFrame[i] = i % 10;
+  }
+  
+  rfWriteFrame(&testFrame[0]);
 }
 
 /* Original BasicChat loop
@@ -42,18 +51,26 @@ void setup()
   }
 }*/
 
+/* Idle loop for tests run in setup.
+ */
+void loop()
+{
+  
+}
+
 /* Transmit loop
  * Send 100 data packets as quickly as possible.
  * Data is the current time as given by millis().
  */
-void loop()
+/*void loop()
 {
   if (numPackets < 100)
   {
     rfWrite(millis());
     numPackets++;
+    Serial.print(numPackets + "\r\n");
   }
-}
+}*/
 
 /* Receive loop
  *
@@ -65,7 +82,7 @@ void loop()
   if (rfAvailable())  // If data receievd on radio...
   {
     numPackets++;
-    sprintf(tmpBuf, "%i: Received  %i at time %i\n", numPackets, rfRead(), millis());
+    sprintf(tmpBuf, "%u: Received %u at time %u\r\n", numPackets, rfRead(), millis());
     Serial.print(tmpBuf);
   }
 }*/

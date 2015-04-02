@@ -168,6 +168,36 @@ void rfWrite(uint8_t b)
   TRX_STATE = (TRX_STATE & 0xE0) | RX_ON;
 }
 
+// This function will transmit a single byte out of the radio.
+void rfWriteFrame(uint8_t* b)
+{
+  uint8_t length = 128;
+
+  // Transceiver State Control Register -- TRX_STATE
+  // This regiseter controls the states of the radio.
+  // Set to the PLL_ON state - this state begins the TX.
+  TRX_STATE = (TRX_STATE & 0xE0) | PLL_ON;  // Set to TX start state
+  while(!(TRX_STATUS & PLL_ON))
+    ;  // Wait for PLL to lock
+
+  digitalWrite(TX_LED, HIGH);  // Turn on TX LED
+
+  // Start of frame buffer - TRXFBST
+  // This is the first byte of the 128 byte frame. It should contain
+  // the length of the transmission.
+  TRXFBST = length;
+  // Now copy the byte-to-send into the address directly after TRXFBST.
+  memcpy((void *)(&TRXFBST+1), &b, 126);
+
+  // Transceiver Pin Register -- TRXPR.
+  // From the PLL_ON state, setting SLPTR high will initiate the TX.
+  TRXPR |= (1<<SLPTR);   // SLPTR = 1
+  TRXPR &= ~(1<<SLPTR);  // SLPTR = 0  // Then bring it back low
+
+  // After sending the byte, set the radio back into the RX waiting state.
+  TRX_STATE = (TRX_STATE & 0xE0) | RX_ON;
+}
+
 // Returns how many unread bytes remain in the radio RX buffer.
 // 0 means the buffer is empty. Maxes out at RF_BUFFER_SIZE.
 unsigned int rfAvailable()
